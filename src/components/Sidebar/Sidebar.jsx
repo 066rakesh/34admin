@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const NAV_ITEMS = [
   { icon: LucideLayoutDashboard, label: "Dashboard", path: "/" },
@@ -19,6 +20,18 @@ const NAV_ITEMS = [
 
 export const Sidebar = ({ openSidebar, onClose }) => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (openSidebar) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [openSidebar]);
 
   const handleLogout = async () => {
     localStorage.removeItem("adminToken");
