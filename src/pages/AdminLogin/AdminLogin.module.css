@@ -1,0 +1,153 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f5f4;
+  padding: 2rem;
+}
+
+.card {
+  width: 38rem;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #eeeeee;
+  border-radius: 1.6rem;
+  padding: 3rem 2.6rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2.2rem;
+}
+
+.logo {
+  width: 5.2rem;
+  height: 5.2rem;
+  border-radius: 1.4rem;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  font-size: 1.3rem;
+  color: var(--text-body);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text-heading);
+  margin-bottom: 0.6rem;
+}
+
+.form input {
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.9rem;
+  font-size: 1.4rem;
+  margin-bottom: 1.4rem;
+  font-family: inherit;
+}
+
+.form input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form input:disabled {
+  background: #f7f7f7;
+  cursor: not-allowed;
+}
+
+.passwordRow {
+  position: relative;
+}
+
+.passwordRow input {
+  padding-right: 4.2rem;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 1.2rem;
+  top: 1.1rem;
+  background: none;
+  border: none;
+  color: var(--text-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.errorText {
+  font-size: 1.3rem;
+  color: #dc2626;
+  margin: -0.6rem 0 1.4rem;
+}
+
+.signInBtn {
+  width: 100%;
+  padding: 1.1rem;
+  border: none;
+  border-radius: 0.9rem;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  transition: opacity 0.2s ease;
+}
+
+.signInBtn:hover {
+  opacity: 0.9;
+}
+
+.signInBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footerNote {
+  font-size: 1.2rem;
+  color: var(--text-body);
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.spinner {
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 1.4rem;
+  }
+
+  .card {
+    padding: 2rem 1.4rem;
+  }
+}

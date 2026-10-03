@@ -1,0 +1,82 @@
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #eeeeee 25%,
+    #f5f5f5 50%,
+    #eeeeee 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.6rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Header */
+.title {
+  width: 10rem;
+  height: 2.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.subtitle {
+  width: 22rem;
+  height: 1.4rem;
+}
+
+/* Stat cards */
+.statIcon {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.9rem;
+  flex-shrink: 0;
+}
+
+.statLabel {
+  width: 9rem;
+  height: 1.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.statValue {
+  width: 4rem;
+  height: 1.8rem;
+}
+
+/* Filters */
+.searchInput {
+  flex: 1;
+  max-width: 32rem;
+  height: 4.2rem;
+  border-radius: 0.9rem;
+}
+
+.filterSelect {
+  width: 17rem;
+  height: 4.2rem;
+  border-radius: 0.9rem;
+}
+
+/* Table rows */
+.text {
+  width: 12rem;
+  height: 1.4rem;
+}
+
+.textShort {
+  width: 6rem;
+  height: 1.4rem;
+}
+
+.badge {
+  width: 8rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+}

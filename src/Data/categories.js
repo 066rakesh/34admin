@@ -1,0 +1,18 @@
+export const categories = [
+  "All",
+  "Starters",
+  "Main Course",
+  "Pizza",
+  "Burger",
+  "Sandwich",
+  "Pasta",
+  "Momos",
+  "Rolls",
+  "Chinese",
+  "South Indian",
+  "North Indian",
+  "Thali",
+  "Snacks",
+  "Beverages",
+  "Desserts",
+];

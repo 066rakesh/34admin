@@ -1,0 +1,54 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 25rem;
+  right: 0;
+  height: 6.5rem;
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  background: #fff;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.hamburgerBtn {
+  display: none;
+  margin-right: auto;
+  border: none;
+  background: none;
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.adminName {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .header {
+    left: 0;
+    padding: 0 1.5rem;
+  }
+  
+  .hamburgerBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
