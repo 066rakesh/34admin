@@ -67,7 +67,15 @@ export const Dashboard = () => {
     const now = new Date();
 
     const paidOrders = (orders || []).filter((o) => o?.status === "paid");
+
+    const revenueOrders = paidOrders.filter(
+      (o) => o?.deliveryStatus !== "cancelled",
+    );
+
     const todayOrders = paidOrders.filter((o) =>
+      isSameDay(new Date(o.createdAt), now),
+    );
+    const todayRevenueOrders = revenueOrders.filter((o) =>
       isSameDay(new Date(o.createdAt), now),
     );
 
@@ -79,7 +87,7 @@ export const Dashboard = () => {
       weekly.push({
         day: day.toLocaleDateString("en-IN", { weekday: "short" }),
         value: sumAmount(
-          paidOrders.filter((o) => isSameDay(new Date(o.createdAt), day)),
+          revenueOrders.filter((o) => isSameDay(new Date(o.createdAt), day)),
         ),
       });
     }
@@ -87,8 +95,8 @@ export const Dashboard = () => {
     return {
       todayOrders,
       weekly,
-      totalRevenue: sumAmount(paidOrders),
-      todayRevenue: sumAmount(todayOrders),
+      totalRevenue: sumAmount(revenueOrders),
+      todayRevenue: sumAmount(todayRevenueOrders),
     };
   }, [orders]);
 
