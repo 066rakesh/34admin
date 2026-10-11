@@ -5,7 +5,6 @@ import {
   LucideUserSearch,
   LucideUtensils,
   Menu,
-  X,
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import { NavLink, useNavigate } from "react-router-dom";

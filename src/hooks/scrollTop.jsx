@@ -11,4 +11,6 @@ export const ScrollTop = () => {
       behavior: "smooth",
     });
   }, [pathname]);
+
+  return null;
 };

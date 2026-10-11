@@ -28,7 +28,7 @@ export const AdminLogin = () => {
       navigate("/");
     } catch (err) {
       console.error("Admin login failed", err);
-      setError("Invalid email or password.");
+      setError(error.response?.data?.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }
@@ -76,11 +76,7 @@ export const AdminLogin = () => {
 
           {error && <p className={styles.errorText}>{error}</p>}
 
-          <button
-            type="submit"
-            className={styles.signInBtn}
-            disabled={setLoading}
-          >
+          <button type="submit" className={styles.signInBtn} disabled={loading}>
             {loading ? (
               <>
                 <span className={styles.spinner} />

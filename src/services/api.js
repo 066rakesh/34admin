@@ -17,7 +17,9 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes("/api/admin/login");
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem("adminToken");
       window.location.href = "/login";
     }

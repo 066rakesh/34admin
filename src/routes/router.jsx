@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AdminLayout } from "../AdminLayout";
 import { Dashboard } from "../pages/Dashboard/Dashboard";
 import { MenuManagement } from "../pages/MenuManagement/MenuManagement";
@@ -33,9 +33,13 @@ export const router = createBrowserRouter([
         element: <Users />,
       },
       {
-        path: "Orders",
+        path: "orders",
         element: <Orders />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);

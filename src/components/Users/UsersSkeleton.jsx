@@ -54,7 +54,7 @@ export const UsersSkeleton = () => {
             </tr>
           </thead>
           <tbody>
-            {Array.from({ length: 8 }).map((i) => (
+            {Array.from({ length: 8 }).map((_, i) => (
               <tr key={i}>
                 <td>
                   <div className={styles.nameCell}>

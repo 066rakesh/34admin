@@ -1,14 +1,23 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { LuX, LuPlus } from "react-icons/lu";
 import styles from "./EditProductModal.module.css";
 import { uploadImage } from "../../services/productService";
 import { useLockBodyScroll } from "../../hooks/useLockBodyScroll";
+import { categories } from "../../Data/categories";
+import {
+  buildProductPayload,
+  validateImageFile,
+} from "../../utils/productForm";
+
+const CATEGORY_OPTIONS = categories.filter((c) => c !== "All");
+
+const errorStyle = { color: "#b91c1c", fontSize: "13px", margin: "6px 0 0" };
 
 const initialForm = {
   title: "",
   image: "",
   description: "",
-  category: "Mains",
+  category: CATEGORY_OPTIONS[0],
   isVeg: false,
   prepTime: "",
   rating: 0,
@@ -25,44 +34,57 @@ export const AddProductModal = ({ onClose, onSave }) => {
   const [useVariants, setUseVariants] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const fileInputRef = useRef(null);
   const abortControllerRef = useRef(null);
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (!file) return;
+
+    const problem = validateImageFile(file);
+    if (problem) {
+      setFormError(problem);
+      return;
+    }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    setFormError("");
     setIsUploading(true);
+
     try {
       const res = await uploadImage(file, controller.signal);
       setForm((prev) => ({ ...prev, image: res.data.url }));
     } catch (error) {
       if (error.name === "CanceledError" || error.code === "ERR_CANCELED") {
-        console.log("Upload cancelled by user");
-      } else {
-        console.error("Image upload failed", error);
+        return;
       }
+      console.error("Image upload failed", error);
+      setFormError(
+        error.response?.data?.message ||
+          "Image upload failed. Please try again.",
+      );
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "number" ? Number(value) : value,
-    }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleVariantChange = (index, field, value) => {
-    const updatedVariants = [...form.variants];
-    updatedVariants[index] = { ...updatedVariants[index], [field]: value };
-    setForm((prev) => ({ ...prev, variants: updatedVariants }));
+    setForm((prev) => ({
+      ...prev,
+      variants: prev.variants.map((variant, i) =>
+        i === index ? { ...variant, [field]: value } : variant,
+      ),
+    }));
   };
 
   const addVariant = () => {
@@ -88,14 +110,25 @@ export const AddProductModal = ({ onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isUploading || isSaving) return;
 
-    const payload = useVariants
-      ? { ...form, price: undefined }
-      : { ...form, variants: [] };
+    const { payload, error } = buildProductPayload(form, useVariants);
 
+    if (error) {
+      setFormError(error);
+      return;
+    }
+
+    setFormError("");
     setIsSaving(true);
+
     try {
       await onSave(payload);
+    } catch (err) {
+      setFormError(
+        err?.response?.data?.message ||
+          "Could not save the product. Please try again.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -103,9 +136,14 @@ export const AddProductModal = ({ onClose, onSave }) => {
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.modal}>
+      <div
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-product-title"
+      >
         <div className={styles.header}>
-          <h3>Add product</h3>
+          <h3 id="add-product-title">Add product</h3>
           <button
             type="button"
             aria-label="Close"
@@ -129,7 +167,7 @@ export const AddProductModal = ({ onClose, onSave }) => {
             )}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               ref={fileInputRef}
               onChange={handleImageChange}
               style={{ display: "none" }}
@@ -144,8 +182,11 @@ export const AddProductModal = ({ onClose, onSave }) => {
             </button>
           </div>
 
-          <label className={styles.label}>Title</label>
+          <label className={styles.label} htmlFor="add-title">
+            Title
+          </label>
           <input
+            id="add-title"
             type="text"
             name="title"
             placeholder="e.g. Cheesy Pupperoni Pizza"
@@ -154,8 +195,11 @@ export const AddProductModal = ({ onClose, onSave }) => {
             required
           />
 
-          <label className={styles.label}>Description</label>
+          <label className={styles.label} htmlFor="add-description">
+            Description
+          </label>
           <textarea
+            id="add-description"
             rows={2}
             name="description"
             placeholder="Short description of the dish"
@@ -165,20 +209,28 @@ export const AddProductModal = ({ onClose, onSave }) => {
 
           <div className={styles.row2}>
             <div>
-              <label className={styles.label}>Category</label>
+              <label className={styles.label} htmlFor="add-category">
+                Category
+              </label>
               <select
+                id="add-category"
                 name="category"
                 value={form.category}
                 onChange={handleInputChange}
               >
-                <option>Mains</option>
-                <option>Beverages</option>
-                <option>Breakfast</option>
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className={styles.label}>Type</label>
+              <label className={styles.label} htmlFor="add-type">
+                Type
+              </label>
               <select
+                id="add-type"
                 value={form.isVeg ? "veg" : "nonveg"}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -195,18 +247,25 @@ export const AddProductModal = ({ onClose, onSave }) => {
 
           <div className={styles.row2}>
             <div>
-              <label className={styles.label}>Prep time (mins)</label>
+              <label className={styles.label} htmlFor="add-prep">
+                Prep time (mins)
+              </label>
               <input
+                id="add-prep"
                 type="number"
                 name="prepTime"
+                min="0"
                 placeholder="e.g. 20"
                 value={form.prepTime}
                 onChange={handleInputChange}
               />
             </div>
             <div>
-              <label className={styles.label}>Rating</label>
+              <label className={styles.label} htmlFor="add-rating">
+                Rating
+              </label>
               <input
+                id="add-rating"
                 type="number"
                 name="rating"
                 step="0.1"
@@ -234,7 +293,9 @@ export const AddProductModal = ({ onClose, onSave }) => {
             <input
               type="number"
               name="price"
+              min="0"
               placeholder="Price"
+              aria-label="Price"
               value={form.price}
               onChange={handleInputChange}
             />
@@ -245,6 +306,7 @@ export const AddProductModal = ({ onClose, onSave }) => {
                   <input
                     type="text"
                     placeholder="Label (e.g. Small)"
+                    aria-label="Size label"
                     value={variant.label}
                     onChange={(e) =>
                       handleVariantChange(index, "label", e.target.value)
@@ -252,14 +314,12 @@ export const AddProductModal = ({ onClose, onSave }) => {
                   />
                   <input
                     type="number"
+                    min="0"
                     placeholder="Price"
+                    aria-label="Size price"
                     value={variant.price}
                     onChange={(e) =>
-                      handleVariantChange(
-                        index,
-                        "price",
-                        Number(e.target.value),
-                      )
+                      handleVariantChange(index, "price", e.target.value)
                     }
                   />
                   <button
@@ -318,6 +378,12 @@ export const AddProductModal = ({ onClose, onSave }) => {
               Craving
             </label>
           </div>
+
+          {formError && (
+            <p role="alert" style={errorStyle}>
+              {formError}
+            </p>
+          )}
 
           <div className={styles.actions}>
             <button

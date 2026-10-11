@@ -1,11 +1,19 @@
 import { LuUsers, LuShieldCheck, LuUser, LuCalendarPlus } from "react-icons/lu";
 import styles from "./Users.module.css";
-import { useContext, useEffect, useState } from "react";
-import { getAllUsers } from "../../services/userService";
+import { useContext, useState } from "react";
 import { Search } from "lucide-react";
 import { ErrorState } from "../../components/Common/ErrorState";
 import { UsersSkeleton } from "../../components/Users/UsersSkeleton";
 import { UserContext } from "../../context/UserContext";
+
+const getInitials = (name) =>
+  String(name || "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
 export const Users = () => {
   const { users, loading, error, fetchAllUsers } = useContext(UserContext);
@@ -13,13 +21,21 @@ export const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("All roles");
 
-  const filterUsers = users?.filter((user) => {
-    const search = searchTerm.toLowerCase();
+  const userList = users || [];
+
+  const filterUsers = userList.filter((user) => {
+    const search = searchTerm.trim().toLowerCase();
 
     const matchesSearch =
-      user?.name?.toLowerCase().includes(search) ||
-      user?.email?.toLowerCase().includes(search) ||
-      user?.phone?.toLowerCase().includes(search);
+      String(user?.name ?? "")
+        .toLowerCase()
+        .includes(search) ||
+      String(user?.email ?? "")
+        .toLowerCase()
+        .includes(search) ||
+      String(user?.phone ?? "")
+        .toLowerCase()
+        .includes(search);
 
     const matchesRole =
       selectedRole === "All roles" || user?.role === selectedRole.toLowerCase();
@@ -27,12 +43,13 @@ export const Users = () => {
     return matchesSearch && matchesRole;
   });
 
-  const adminCount = users.filter((user) => user?.role === "admin").length;
+  const adminCount = userList.filter((user) => user?.role === "admin").length;
+  const customerCount = userList.filter(
+    (user) => user?.role === "customer",
+  ).length;
 
-  const customerCount = users.filter((user) => user.role === "customer").length;
-
-  const newThisMonth = users.filter((user) => {
-    if (!user.createdAt) return false;
+  const newThisMonth = userList.filter((user) => {
+    if (!user?.createdAt) return false;
 
     const created = new Date(user.createdAt);
     const now = new Date();
@@ -64,7 +81,7 @@ export const Users = () => {
           </div>
           <div>
             <p className={styles.statLabel}>Total users</p>
-            <p className={styles.statValue}>{users?.length}</p>
+            <p className={styles.statValue}>{userList.length}</p>
           </div>
         </div>
 
@@ -103,12 +120,14 @@ export const Users = () => {
         <input
           type="text"
           placeholder="Search by name, email or phone..."
+          aria-label="Search users"
           className={styles.searchInput}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <select
           className={styles.filterSelect}
+          aria-label="Filter by role"
           value={selectedRole}
           onChange={(e) => setSelectedRole(e.target.value)}
         >
@@ -136,42 +155,35 @@ export const Users = () => {
               </tr>
             </thead>
             <tbody>
-              {filterUsers?.map((user) => {
-                const intials = user?.name
-                  ? user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                  : "";
-                return (
-                  <tr key={user._id}>
-                    <td>
-                      <div className={styles.nameCell}>
-                        <span className={styles.avatar}>{intials}</span>
-                        <span>{user?.name}</span>
-                      </div>
-                    </td>
-                    <td>{user?.email}</td>
-                    <td>{user?.phone}</td>
-                    <td className={styles.roleCell}>
-                      <span
-                        className={`${styles.roleBadge} ${user?.role === "admin" ? styles.admin : styles.customer}`}
-                      >
-                        {user?.role}
+              {filterUsers.map((user) => (
+                <tr key={user._id}>
+                  <td>
+                    <div className={styles.nameCell}>
+                      <span className={styles.avatar}>
+                        {getInitials(user?.name)}
                       </span>
-                    </td>
-                    <td>
-                      {user?.createdAt &&
-                        new Date(user.createdAt).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <span>{user?.name}</span>
+                    </div>
+                  </td>
+                  <td>{user?.email}</td>
+                  <td>{user?.phone}</td>
+                  <td className={styles.roleCell}>
+                    <span
+                      className={`${styles.roleBadge} ${user?.role === "admin" ? styles.admin : styles.customer}`}
+                    >
+                      {user?.role}
+                    </span>
+                  </td>
+                  <td>
+                    {user?.createdAt &&
+                      new Date(user.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

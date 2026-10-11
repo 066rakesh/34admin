@@ -6,36 +6,55 @@ import { OrdersSkeleton } from "../../components/Orders/OrdersSkeleton";
 import { Search } from "lucide-react";
 import { OrderContext } from "../../context/OrderContext";
 
+const PAYMENT_FILTERS = {
+  Paid: "paid",
+  "Awaiting payment": "created",
+  Failed: "failed",
+  "All payments": null,
+};
+
 export const Orders = () => {
   const { orders, loading, error, fetchAllOrders } = useContext(OrderContext);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [orderStatus, setOrderStatus] = useState("All statuses");
+  const [paymentFilter, setPaymentFilter] = useState("Paid");
 
-  const filterOrders = orders?.filter((order) => {
-    const search = searchTerm.toLowerCase();
+  const orderList = orders || [];
+  const paidOrders = orderList.filter((order) => order?.status === "paid");
+
+  const filterOrders = orderList.filter((order) => {
+    const search = searchTerm.trim().toLowerCase();
+    const wantedPayment = PAYMENT_FILTERS[paymentFilter];
+
+    const matchesPayment =
+      wantedPayment === null || order?.status === wantedPayment;
 
     const matchesSearch =
-      order?.razorpayOrderId.toLowerCase().includes(search) ||
-      order?.user?.name.toLowerCase().includes(search);
+      String(order?.razorpayOrderId ?? "")
+        .toLowerCase()
+        .includes(search) ||
+      String(order?.user?.name ?? "")
+        .toLowerCase()
+        .includes(search);
 
     const matchesOrderStatus =
       orderStatus === "All statuses" ||
-      order?.deliveryStatus.toLowerCase() ===
+      String(order?.deliveryStatus ?? "").toLowerCase() ===
         orderStatus.toLowerCase().replace(/ /g, "_");
 
-    return matchesSearch && matchesOrderStatus;
+    return matchesPayment && matchesSearch && matchesOrderStatus;
   });
 
-  const pendingCount = orders.filter((order) =>
+  const pendingCount = paidOrders.filter((order) =>
     ["placed", "preparing"].includes(order?.deliveryStatus),
   ).length;
 
-  const outForDeliveryCount = orders.filter(
+  const outForDeliveryCount = paidOrders.filter(
     (order) => order?.deliveryStatus === "out_for_delivery",
   ).length;
 
-  const deliveredCount = orders.filter(
+  const deliveredCount = paidOrders.filter(
     (order) => order?.deliveryStatus === "delivered",
   ).length;
 
@@ -61,8 +80,8 @@ export const Orders = () => {
             <LuReceipt size={16} />
           </div>
           <div>
-            <p className={styles.statLabel}>Total orders</p>
-            <p className={styles.statValue}>{orders.length}</p>
+            <p className={styles.statLabel}>Paid orders</p>
+            <p className={styles.statValue}>{paidOrders.length}</p>
           </div>
         </div>
 
@@ -101,12 +120,24 @@ export const Orders = () => {
         <input
           type="text"
           placeholder="Search by order ID or customer..."
+          aria-label="Search orders"
           className={styles.searchInput}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <select
           className={styles.filterSelect}
+          aria-label="Filter by payment"
+          value={paymentFilter}
+          onChange={(e) => setPaymentFilter(e.target.value)}
+        >
+          {Object.keys(PAYMENT_FILTERS).map((label) => (
+            <option key={label}>{label}</option>
+          ))}
+        </select>
+        <select
+          className={styles.filterSelect}
+          aria-label="Filter by delivery status"
           value={orderStatus}
           onChange={(e) => setOrderStatus(e.target.value)}
         >
@@ -142,9 +173,11 @@ export const Orders = () => {
               {filterOrders.map((order) => (
                 <tr key={order?._id}>
                   <td className={styles.orderId}>
-                    {order?.razorpayOrderId?.slice(6, 14)}
+                    {order?.razorpayOrderId
+                      ? order.razorpayOrderId.slice(6, 14)
+                      : String(order?._id).slice(-8)}
                   </td>
-                  <td>{order?.user?.name}</td>
+                  <td>{order?.user?.name || "Deleted user"}</td>
                   <td>
                     {order?.items?.length} item
                     {order?.items?.length > 1 ? "s" : ""}
@@ -158,21 +191,25 @@ export const Orders = () => {
                     </span>
                   </td>
                   <td>
-                    <span
-                      className={`${styles.badge} ${
-                        order?.deliveryStatus === "delivered"
-                          ? styles.success
-                          : order?.deliveryStatus === "out_for_delivery"
-                            ? styles.pro
-                            : order?.deliveryStatus === "cancelled"
-                              ? styles.danger
-                              : order?.deliveryStatus === "preparing"
-                                ? styles.warning
-                                : styles.neutral
-                      }`}
-                    >
-                      {order?.deliveryStatus}
-                    </span>
+                    {order?.status === "paid" ? (
+                      <span
+                        className={`${styles.badge} ${
+                          order?.deliveryStatus === "delivered"
+                            ? styles.success
+                            : order?.deliveryStatus === "out_for_delivery"
+                              ? styles.pro
+                              : order?.deliveryStatus === "cancelled"
+                                ? styles.danger
+                                : order?.deliveryStatus === "preparing"
+                                  ? styles.warning
+                                  : styles.neutral
+                        }`}
+                      >
+                        {order?.deliveryStatus}
+                      </span>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                   <td>
                     {new Date(order?.createdAt).toLocaleDateString("en-IN", {
